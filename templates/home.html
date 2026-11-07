@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCart | Home</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+
+<body class="home-page">
+
+    <div class="home-container">
+
+        <header class="home-header">
+            <h1>SmartCart</h1>
+            <p>Smart Shopping, Easy Living</p>
+        </header>
+
+        <main class="home-content">
+
+            <h2>Welcome to SmartCart!</h2>
+            <p class="home-description">
+                Please select your login type
+            </p>
+
+            <div class="role-cards">
+
+                <div class="role-card">
+                    <div class="role-icon">⚙️</div>
+                    <h3>Admin Login</h3>
+                    <p>Manage products and your online store.</p>
+
+                    <a href="{{ url_for('admin_login') }}"
+                       class="role-btn">
+                        Login as Admin
+                    </a>
+                </div>
+
+                <div class="role-card">
+                    <div class="role-icon">🛍️</div>
+                    <h3>User Login</h3>
+                    <p>Explore products and shop online.</p>
+
+                    <a href="/user-login" class="role-btn">
+                        Login as User
+                    </a>
+                </div>
+
+            </div>
+        </main>
+
+        <footer class="home-footer">
+            © 2026 SmartCart. All Rights Reserved.
+        </footer>
+
+    </div>
+
+</body>
+</html>

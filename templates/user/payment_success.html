@@ -1,0 +1,59 @@
+
+{% extends "user/base.html" %}
+
+{% block title %}Payment Successful | SmartCart{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="card shadow p-5 mx-auto text-center"
+         style="max-width:600px; border-radius:15px;">
+
+        <div class="mb-3">
+            <i class="bi bi-check-circle-fill text-success"
+               style="font-size:75px;"></i>
+        </div>
+
+        <h2 class="text-success mb-3">
+            Payment Successful!
+        </h2>
+
+        <p class="text-muted">
+            Thank you for shopping with SmartCart.
+            Your payment has been completed successfully.
+        </p>
+
+        <hr>
+
+        <div class="text-start mt-3">
+
+            <p>
+                <strong>Payment ID:</strong>
+                {{ payment_id }}
+            </p>
+
+            <p>
+                <strong>Order ID:</strong>
+                {{ order_id }}
+            </p>
+
+            <p>
+                <strong>Payment Status:</strong>
+                <span class="badge bg-success">Paid</span>
+            </p>
+
+        </div>
+
+        <hr>
+
+        <a href="{{ url_for('user_products') }}"
+           class="btn btn-primary btn-lg mt-3">
+            Continue Shopping
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

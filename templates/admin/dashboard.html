@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCart | Admin Dashboard</title>
+
+    <link rel="stylesheet"
+      href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+
+    <div class="dashboard">
+
+        <aside class="sidebar">
+            <h2 class="logo">SmartCart</h2>
+
+            <p class="menu-title">MAIN MENU</p>
+
+            <a href="{{ url_for('admin_dashboard') }}" class="active">
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('add_item') }}">Add Product</a>
+
+            <a href="{{ url_for('item_list') }}">View All Products</a>
+
+            <a href="{{ url_for('user_logout') }}">Logout</a>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="topbar">
+                <h2>Admin Dashboard</h2>
+                <div class="profile">
+                    Welcome, {{ session.get('admin') or 'Admin' }}
+                </div>
+            </header>
+
+            <section class="welcome">
+                <h1>Welcome Back, Admin!</h1>
+                <p>Manage your SmartCart products from one place.</p>
+            </section>
+
+            <div class="success-message">
+                Login Successful!
+            </div>
+
+            <section class="cards">
+
+                <div class="card">
+                    <h3>Dashboard</h3>
+                    <p>Manage your store activities.</p>
+                </div>
+
+                <div class="card">
+                    <h3>Add Product</h3>
+                    <p>Add new products to your store.</p>
+                    <a href="{{ url_for('add_item') }}" class="btn">
+                        Add Product
+                    </a>
+                </div>
+
+                <div class="card">
+                    <h3>View Products</h3>
+                    <p>View and manage all products.</p>
+                    <a href="{{ url_for('item_list') }}" class="btn">
+                        View Products
+                    </a>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+</body>
+</html>

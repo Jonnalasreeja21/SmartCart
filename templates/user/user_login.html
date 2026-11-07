@@ -1,0 +1,45 @@
+{% extends "user/base.html" %}
+
+{% block title %}User Login | SmartCart{% endblock %}
+
+{% block content %}
+
+<div class="auth-page">
+    <div class="auth-card">
+
+        <div class="login-logo">
+            <h1>🛒 SmartCart</h1>
+            <p>Welcome back! Please login to continue.</p>
+        </div>
+
+        <h2>User Login</h2>
+
+        <form method="POST" action="{{ url_for('user_login') }}">
+
+            <label>Email Address</label>
+            <input type="email" name="email"
+                   placeholder="Enter your email" required>
+
+            <label>Password</label>
+            <input type="password" name="password"
+                   placeholder="Enter your password" required>
+
+            <button type="submit" class="login-btn">
+                Login
+            </button>
+
+        </form>
+
+        <p class="register-text">
+            Don't have an account?
+            <a href="{{ url_for('user_register') }}">Register Now</a>
+        </p>
+
+        <p class="back-home">
+            <a href="{{ url_for('home') }}">← Back to Home</a>
+        </p>
+
+    </div>
+</div>
+
+{% endblock %}

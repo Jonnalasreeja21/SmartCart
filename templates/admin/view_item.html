@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SmartCart | Product Details</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+
+<body class="view-product-page">
+
+    <div class="view-product-container">
+
+        <div class="view-product-header">
+            <h1>Product Details</h1>
+            <p>View complete information about your product.</p>
+        </div>
+
+        <div class="product-details-card">
+
+            <div class="details-image-section">
+                <img
+                    src="/static/uploads/product_images/{{ product.image }}"
+                    alt="{{ product.name }}"
+                    class="details-product-image">
+            </div>
+
+            <div class="details-info">
+
+                <span class="details-label">PRODUCT INFORMATION</span>
+
+                <h2>{{ product.name }}</h2>
+
+                <div class="detail-item">
+                    <span>Name</span>
+                    <strong>{{ product.name }}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Description</span>
+                    <strong>{{ product.description }}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Category</span>
+                    <strong class="details-category">
+                        {{ product.category }}
+                    </strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Price</span>
+                    <strong class="details-price">
+                        ₹{{ "%.2f"|format(product.price|float) }}
+                    </strong>
+                </div>
+
+                <div class="details-actions">
+                    <a href="{{ url_for('item_list') }}"
+                       class="back-list-btn">
+                        ← Back to List
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

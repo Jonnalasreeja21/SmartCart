@@ -1,0 +1,104 @@
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/user.css') }}">
+<form action="{{ url_for('user_checkout') }}" method="POST">
+
+    <table border="1" cellpadding="10" width="100%">
+
+        <tr>
+            <th>
+                <input type="checkbox" id="selectAll"
+                       onchange="selectAllProducts(this)">
+            </th>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Action</th>
+        </tr>
+
+        {% for pid, item in cart.items() %}
+
+        <tr>
+            <td>
+                <input type="checkbox"
+                       name="selected_products"
+                       value="{{ pid }}"
+                       class="product-checkbox"
+                       onchange="updateSelection()">
+            </td>
+
+            <td>
+                <img src="/static/uploads/product_images/{{ item.image }}"
+                     width="80">
+            </td>
+
+            <td>{{ item.name }}</td>
+
+            <td>₹{{ item.price }}</td>
+
+            <td>
+                <a href="/user/cart/decrease/{{ pid }}">-</a>
+                {{ item.quantity }}
+                <a href="/user/cart/increase/{{ pid }}">+</a>
+            </td>
+
+            <td>
+                ₹{{ item.price * item.quantity }}
+            </td>
+
+            <td>
+                <a href="/user/cart/remove/{{ pid }}">Remove</a>
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    <br>
+
+    <h3>
+        Selected Products:
+        <span id="selectedCount">0</span>
+    </h3>
+
+    <button type="submit" id="checkoutBtn" disabled>
+        Proceed to Checkout
+    </button>
+
+</form>
+
+<script>
+
+function selectAllProducts(source) {
+
+    let checkboxes = document.querySelectorAll('.product-checkbox');
+
+    checkboxes.forEach(function(checkbox) {
+        checkbox.checked = source.checked;
+    });
+
+    updateSelection();
+}
+
+function updateSelection() {
+
+    let checkboxes = document.querySelectorAll('.product-checkbox');
+
+    let selected = document.querySelectorAll(
+        '.product-checkbox:checked'
+    );
+
+    document.getElementById('selectedCount').innerText =
+        selected.length;
+
+    document.getElementById('checkoutBtn').disabled =
+        selected.length === 0;
+
+    document.getElementById('selectAll').checked =
+        checkboxes.length > 0 &&
+        selected.length === checkboxes.length;
+}
+
+</script>

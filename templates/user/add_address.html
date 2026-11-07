@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Address | Smart Cart</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #222;
+        }
+
+        h3 {
+            margin: 20px 0 12px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #2874f0;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 13px;
+            background: #2874f0;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #1558c0;
+        }
+
+        .address-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .address-card label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .address-card input[type="radio"] {
+            width: auto;
+        }
+
+        .address-card p {
+            margin: 6px 0;
+            color: #555;
+        }
+
+        .product {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .total {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 19px;
+            font-weight: bold;
+        }
+
+        .empty {
+            color: #888;
+            padding: 15px 0;
+        }
+
+        @media(max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- DELIVERY ADDRESS -->
+    <div class="card">
+
+        <h2>📍 Delivery Address</h2>
+
+        <!-- SELECT SAVED ADDRESS -->
+        {% if saved_addresses %}
+
+            <h3>Choose Saved Address</h3>
+
+            <form action="{{ url_for('select_address') }}" method="POST">
+
+                {% for address in saved_addresses %}
+
+                    <div class="address-card">
+
+                        <label>
+                            <input
+                                type="radio"
+                                name="address_id"
+                                value="{{ address['id'] }}"
+                                required
+                            >
+                            {{ address['full_name'] }}
+                        </label>
+
+                        <p>{{ address['phone'] }}</p>
+                        <p>{{ address['address'] }}</p>
+
+                        <p>
+                            {{ address['city'] }},
+                            {{ address['state'] }} -
+                            {{ address['pincode'] }}
+                        </p>
+
+                    </div>
+
+                {% endfor %}
+
+                <button type="submit" class="btn">
+                    Deliver to this Address
+                </button>
+
+            </form>
+
+        {% else %}
+
+            <p class="empty">No saved addresses found. Add a new address below.</p>
+
+        {% endif %}
+
+        <!-- ADD NEW ADDRESS -->
+        <h3>Add New Address</h3>
+
+        <form action="{{ url_for('save_address') }}" method="POST">
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="full_name"
+                       placeholder="Enter your full name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone"
+                       pattern="[0-9]{10}"
+                       maxlength="10"
+                       placeholder="Enter 10 digit mobile number"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>Address</label>
+                <textarea name="address"
+                          placeholder="House number, street, area"
+                          required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>City</label>
+                <input type="text" name="city"
+                       placeholder="Enter city" required>
+            </div>
+
+            <div class="form-group">
+                <label>State</label>
+                <input type="text" name="state"
+                       placeholder="Enter state" required>
+            </div>
+
+            <div class="form-group">
+                <label>PIN Code</label>
+                <input type="text" name="pincode"
+                       pattern="[0-9]{6}"
+                       maxlength="6"
+                       placeholder="Enter 6 digit PIN code"
+                       required>
+            </div>
+
+            <button type="submit" class="btn">
+                Save Address & Continue
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- ORDER SUMMARY -->
+    <div class="card">
+
+        <h2>🛒 Order Summary</h2>
+
+        {% if selected_products %}
+
+            {% for pid, item in selected_products.items() %}
+
+                <div class="product">
+
+                    <div>
+                        <strong>{{ item['name'] }}</strong>
+                        <p>Qty: {{ item['quantity'] }}</p>
+                    </div>
+
+                    <div>
+                        ₹{{ "%.2f"|format(
+                            item['price']|float * item['quantity']|int
+                        ) }}
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+            <div class="total">
+                <span>Grand Total</span>
+                <span>₹{{ "%.2f"|format(selected_total) }}</span>
+            </div>
+
+        {% else %}
+
+            <p class="empty">No products selected.</p>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

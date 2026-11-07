@@ -1,0 +1,116 @@
+{% extends "user/base.html" %}
+
+{% block title %}Order Summary | SmartCart{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <h2 class="text-center mb-4">Order Summary</h2>
+
+    <div class="row">
+
+        <!-- DELIVERY ADDRESS -->
+        <div class="col-md-5 mb-4">
+
+            <div class="card p-4 shadow h-100">
+
+                <h4 class="mb-3">📍 Delivery Address</h4>
+
+                <p><strong>{{ address.full_name }}</strong></p>
+
+                <p>{{ address.phone }}</p>
+
+                <p>{{ address.address }}</p>
+
+                <p>
+                    {{ address.city }},
+                    {{ address.state }} -
+                    {{ address.pincode }}
+                </p>
+
+                <a href="{{ url_for('user_checkout') }}"
+                   class="btn btn-outline-primary mt-3">
+                    Change Address
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- ORDER DETAILS -->
+        <div class="col-md-7 mb-4">
+
+            <div class="card p-4 shadow">
+
+                <h4 class="mb-3">🛒 Selected Products</h4>
+
+                {% if selected_products %}
+
+                    {% for pid, item in selected_products.items() %}
+
+                        <div class="d-flex justify-content-between
+                                    align-items-center border-bottom py-3">
+
+                            <div>
+                                <strong>{{ item.name }}</strong>
+
+                                <p class="mb-0 text-muted">
+                                    Quantity: {{ item.quantity }}
+                                </p>
+                            </div>
+
+                            <div>
+                                ₹{{ "%.2f"|format(
+                                    item.price|float *
+                                    item.quantity|int
+                                ) }}
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                    <div class="d-flex justify-content-between mt-4">
+
+                        <h5>Grand Total</h5>
+
+                        <h5 class="text-success">
+                            ₹{{ "%.2f"|format(selected_total) }}
+                        </h5>
+
+                    </div>
+
+                    <!-- PAYMENT BUTTON -->
+                    <form action="{{ url_for('user_pay') }}" method="POST">
+
+                        <button type="submit"
+                                class="btn btn-primary btn-lg w-100 mt-4">
+                            Proceed to Payment
+                        </button>
+
+                    </form>
+
+                {% else %}
+
+                    <p class="text-danger">
+                        No products selected.
+                    </p>
+
+                    <a href="{{ url_for('user_cart') }}"
+                       class="btn btn-primary">
+                        Go to Cart
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

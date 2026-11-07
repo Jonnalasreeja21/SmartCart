@@ -1,0 +1,64 @@
+
+<!-- Product Grid -->
+<div class="products-grid">
+
+    {% for product in products %}
+
+    <div class="product-card">
+
+        <!-- Product Image -->
+        <div class="product-image-wrapper">
+            <img
+                src="{{ url_for('static', filename='uploads/product_images/' ~ product.image) }}"
+                alt="{{ product.name }}"
+                class="product-image"
+                loading="lazy">
+        </div>
+
+        <!-- Product Information -->
+        <div class="product-info">
+
+            <h5 class="product-name">
+                {{ product.name }}
+            </h5>
+
+            <p class="product-category">
+                {{ product.category }}
+            </p>
+
+            <h5 class="product-price">
+                ₹{{ "%.2f"|format(product.price|float) }}
+            </h5>
+
+            <!-- Product Buttons -->
+            <div class="product-actions">
+
+                <a href="{{ url_for('user_product_details', product_id=product.product_id) }}"
+                   class="btn btn-outline-primary">
+                    <i class="bi bi-eye"></i>
+                    View Details
+                </a>
+
+                <a href="{{ url_for('add_to_cart', product_id=product.product_id) }}"
+                   class="btn btn-primary">
+                    <i class="bi bi-cart-plus"></i>
+                    Add to Cart
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="no-products">
+        <i class="bi bi-box-seam display-3 text-secondary"></i>
+        <h4 class="mt-3">No Products Found</h4>
+        <p>Try searching with a different product name or category.</p>
+    </div>
+
+    {% endfor %}
+
+</div>
