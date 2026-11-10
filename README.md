@@ -11,7 +11,7 @@ SmartCart is a Flask and MySQL e-commerce application with separate admin and cu
 - Session-based cart with quantity updates and item removal
 - Address management and checkout
 - Razorpay order creation and payment signature verification
-- Order history, order confirmation, and invoice page
+- Order history, order confirmation, and invoice pages
 
 Payment and email flows require valid provider credentials and external service configuration. They are not available as an offline demo.
 
@@ -23,6 +23,7 @@ Payment and email flows require valid provider credentials and external service 
 - bcrypt
 - Razorpay Python SDK
 - xhtml2pdf
+- python-dotenv
 - HTML, CSS, and JavaScript templates
 
 ## Repository layout
@@ -31,23 +32,21 @@ Payment and email flows require valid provider credentials and external service 
 SmartCart/
 ├── app.py
 ├── config.py
+├── .env.example
+├── requirements.txt
+├── schema.sql
 ├── templates/
-│   ├── admin/
-│   └── user/
 ├── static/
-├── utils/
-│   └── pdf_generator.py
-└── .gitignore
+└── utils/
+    └── pdf_generator.py
 ```
 
 ## Prerequisites
 
 - Python 3.10 or newer
 - MySQL Server
-- A Razorpay account for payment checkout
+- Razorpay credentials for checkout
 - SMTP credentials for email and OTP flows
-
-The repository currently does not include a `requirements.txt` or a database schema/initialization script. The database named in `config.py` and the tables used by the application must exist before the app can run successfully.
 
 ## Local setup
 
@@ -76,15 +75,27 @@ The repository currently does not include a `requirements.txt` or a database sch
    .venv\Scripts\Activate.ps1
    ```
 
-3. Install the application dependencies:
+3. Install dependencies:
 
    ```bash
-   python -m pip install Flask Flask-Mail mysql-connector-python bcrypt razorpay xhtml2pdf
+   python -m pip install -r requirements.txt
    ```
 
-4. Create the MySQL database and tables expected by the application. The schema is not included in this repository yet.
+4. Create the local environment file by copying `.env.example` to `.env`. Generate a unique Flask key with:
 
-5. Configure the database, SMTP, Flask session, and Razorpay settings before starting the application. These settings are currently read from `config.py`.
+   ```bash
+   python -c "import secrets; print(secrets.token_hex(32))"
+   ```
+
+   Put the generated value in `SECRET_KEY` in `.env`, then fill in your MySQL, SMTP, and Razorpay settings. The default database name is `smartcart_db`.
+
+5. Create the database tables:
+
+   ```bash
+   mysql -u root -p < schema.sql
+   ```
+
+   This is an initial schema based on the queries in the current application. Review it before applying it to an existing database. If you change `DB_NAME`, update the database name in `schema.sql` as well.
 
 6. Start the development server:
 
@@ -92,11 +103,11 @@ The repository currently does not include a `requirements.txt` or a database sch
    python app.py
    ```
 
-   Open [http://127.0.0.1:5000](http://127.0.0.1:5000).
+   Open [http://127.0.0.1:5000](http://127.0.0.1:5000). Flask debug mode is disabled by default.
 
 ## Configuration and security
 
-Do not commit real passwords, API secrets, or Flask secret keys. The current `config.py` contains hard-coded credentials; rotate any real credentials that have been committed, then move secrets to environment variables before using the project beyond a local exercise. Use Razorpay test credentials while developing and never run Flask's debug server in production.
+The application reads settings from environment variables; `.env` is loaded for local development and ignored by Git. Never commit real passwords, API secrets, or Flask secret keys. Credentials that were committed previously may remain in Git history: revoke or rotate any real SMTP and Razorpay credentials with their providers. Changing this repository does not invalidate exposed credentials. Use Razorpay test credentials while developing, and deploy behind a production WSGI server rather than Flask's built-in server.
 
 ## License
 
