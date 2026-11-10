@@ -1,16 +1,23 @@
-SECRET_KEY = "abc1234"   # used for sessions
+import os
 
-# MySQL Database Configuration
-DB_HOST = "localhost"
-DB_USER = "root"
-DB_PASSWORD = "root"  # keep empty if no password
-DB_NAME = "smartcart_db"
+from dotenv import load_dotenv
 
-MAIL_SERVER = 'smtp.gmail.com'
-MAIL_PORT = 587
-MAIL_USE_TLS = True
-MAIL_USERNAME = 'jonnalasreeja@gmail.com'
-MAIL_PASSWORD = 'yblt zzvh zawm elxu'
+load_dotenv()
 
-RAZORPAY_KEY_ID = "rzp_test_TvfycYoT7Hz4Jv" # rzp_test_TLeM6Ox9b7K9Dp
-RAZORPAY_KEY_SECRET = "0KTZP7v9j671aG0wihUJWU39" #dU4b4haEuqjJU1pc61pvF0UE
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("Set SECRET_KEY in the environment or in a local .env file.")
+
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_USER = os.getenv("DB_USER", "root")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+DB_NAME = os.getenv("DB_NAME", "smartcart_db")
+
+MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+MAIL_PORT = int(os.getenv("MAIL_PORT", "587"))
+MAIL_USE_TLS = os.getenv("MAIL_USE_TLS", "true").lower() in {"1", "true", "yes", "on"}
+MAIL_USERNAME = os.getenv("MAIL_USERNAME", "")
+MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")
+
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
