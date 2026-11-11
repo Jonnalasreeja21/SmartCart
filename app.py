@@ -711,6 +711,117 @@ def reset_password(token):
 
     return render_template('admin/reset_password.html', token=token)
 
+# =========================================================
+# USER FORGOT PASSWORD
+# =========================================================
+@app.route('/user/forget-password', methods=['GET', 'POST'])
+def user_forgot_password():
+
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        try:
+            cursor.execute("SELECT name FROM users WHERE email = %s", (email,))
+            user = cursor.fetchone()
+
+            # Always show the same response to avoid revealing registered emails.
+            if user:
+                token = serializer.dumps(email, salt='user-password-reset')
+                reset_url = url_for(
+                    'user_reset_password',
+                    token=token,
+                    _external=True
+                )
+
+                msg = Message(
+                    subject="SmartCart - User Password Reset",
+                    sender=config.MAIL_USERNAME,
+                    recipients=[email]
+                )
+                msg.body = f"""Hello {user['name']},
+
+Use the link below to reset your SmartCart password:
+
+{reset_url}
+
+This link expires in 15 minutes. If you did not request this, ignore this email.
+"""
+                mail.send(msg)
+        finally:
+            cursor.close()
+            conn.close()
+
+        flash(
+            'If your email is registered, a password reset link has been sent.',
+            'success'
+        )
+        return redirect(url_for('user_forgot_password'))
+
+    return render_template('user/forget_password.html')
+
+
+# =========================================================
+# USER RESET PASSWORD
+# =========================================================
+@app.route('/user/reset-password/<token>', methods=['GET', 'POST'])
+def user_reset_password(token):
+
+    try:
+        email = serializer.loads(
+            token,
+            salt='user-password-reset',
+            max_age=900
+        )
+    except Exception:
+        flash('Invalid or expired reset link. Please request a new one.', 'danger')
+        return redirect(url_for('user_forgot_password'))
+
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if password != confirm_password:
+            flash('Passwords do not match!', 'danger')
+            return redirect(url_for('user_reset_password', token=token))
+
+        if len(password) < 8:
+            flash('Password must contain at least 8 characters.', 'danger')
+            return redirect(url_for('user_reset_password', token=token))
+
+        hashed_password = bcrypt.hashpw(
+            password.encode('utf-8'),
+            bcrypt.gensalt()
+        ).decode('utf-8')
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                "UPDATE users SET password = %s WHERE email = %s",
+                (hashed_password, email)
+            )
+            if cursor.rowcount == 0:
+                flash('User account not found. Please request a new reset link.', 'danger')
+                return redirect(url_for('user_forgot_password'))
+
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            cursor.close()
+            conn.close()
+
+        flash('Your password has been reset successfully. Please login.', 'success')
+        return redirect(url_for('user_login'))
+
+    return render_template('user/reset_password.html', token=token)
+
+
 # =================================================================
 # ROUTE: USER REGISTRATION
 # =================================================================
