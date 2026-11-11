@@ -24,6 +24,10 @@
             <input type="password" name="password"
                    placeholder="Enter your password" required>
 
+            <div class="forgot-password-row">
+                <a href="{{ url_for('user_forgot_password') }}">Forgot Password?</a>
+            </div>
+
             <button type="submit" class="login-btn">
                 Login
             </button>
