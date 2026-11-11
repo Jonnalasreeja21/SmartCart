@@ -12,3 +12,7 @@ venv/
 !.env.example
 
 # Keep uploaded sample images
+# Local SQLite databases (never commit live customer/order data)
+*.db
+*.sqlite
+*.sqlite3
