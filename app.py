@@ -760,7 +760,7 @@ This link expires in 15 minutes. If you did not request this, ignore this email.
         )
         return redirect(url_for('user_forgot_password'))
 
-    return render_template('user/forget_password.html')
+    return render_template('user/user_forget_password.html')
 
 
 # =========================================================
@@ -819,7 +819,7 @@ def user_reset_password(token):
         flash('Your password has been reset successfully. Please login.', 'success')
         return redirect(url_for('user_login'))
 
-    return render_template('user/reset_password.html', token=token)
+    return render_template('user/user_reset_password.html', token=token)
 
 
 # =================================================================
