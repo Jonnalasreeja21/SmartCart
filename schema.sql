@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS products (
   price DECIMAL(10, 2) NOT NULL,
   image VARCHAR(255) NULL,
   admin_id INT NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
   CONSTRAINT fk_products_admin
     FOREIGN KEY (admin_id) REFERENCES admin(admin_id)
 );
