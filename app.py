@@ -450,48 +450,113 @@ def update_item(item_id):
 
     flash("Product updated successfully!", "success")
     return redirect('/admin/item-list')
-# =================================================================
-#  route-13 DELETE PRODUCT (DELETE DB ROW + DELETE IMAGE FILE)
-# =================================================================
-@app.route('/admin/delete-item/<int:item_id>')
+
+# =========================================================
+# ROUTE 13: DELETE PRODUCT SAFELY
+# =========================================================
+
+@app.route('/admin/delete-item/<int:item_id>', methods=['POST'])
 def delete_item(item_id):
 
     if 'admin_id' not in session:
         flash("Please login first!", "danger")
-        return redirect('/admin-login')
+        return redirect(url_for('admin_login'))
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    conn = None
+    cursor = None
+    image_name = None
 
-    # 1️⃣ Fetch product to get image name
-    cursor.execute("SELECT image FROM products WHERE product_id=%s", (item_id,))
-    product = cursor.fetchone()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
 
-    if not product:
-        flash("Product not found!", "danger")
-        return redirect('/admin/item-list')
+        # 1. Check whether product exists
+        cursor.execute(
+            "SELECT product_id, image FROM products WHERE product_id = %s",
+            (item_id,)
+        )
 
-    image_name = product['image']
+        product = cursor.fetchone()
 
-    # Delete image from folder
-    image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
-    if os.path.exists(image_path):
-        os.remove(image_path)
+        if not product:
+            flash("Product not found!", "danger")
+            return redirect(url_for('item_list'))
 
-    # 2️⃣ Delete product from DB
-    cursor.execute("DELETE FROM products WHERE product_id=%s", (item_id,))
-    conn.commit()
+        image_name = product['image']
 
-    cursor.close()
-    conn.close()
+        # 2. Check whether product is linked to existing orders
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS total
+            FROM order_items
+            WHERE product_id = %s
+            """,
+            (item_id,)
+        )
 
-    flash("Product deleted successfully!", "success")
-    return redirect('/admin/item-list')
+        result = cursor.fetchone()
 
+        if result['total'] > 0:
 
+            flash(
+                "This product cannot be deleted because it is linked "
+                "to existing orders. Order history is protected.",
+                "warning"
+            )
 
-ADMIN_UPLOAD_FOLDER = 'static/uploads/admin_profiles'
-app.config['ADMIN_UPLOAD_FOLDER'] = ADMIN_UPLOAD_FOLDER
+            return redirect(url_for('item_list'))
+
+        # 3. Delete product from database
+        cursor.execute(
+            "DELETE FROM products WHERE product_id = %s",
+            (item_id,)
+        )
+
+        conn.commit()
+
+        # 4. Delete image only after successful database deletion
+        if image_name:
+            image_path = os.path.join(
+                app.root_path,
+                app.config['UPLOAD_FOLDER'],
+                image_name
+            )
+
+            if os.path.isfile(image_path):
+                try:
+                    os.remove(image_path)
+                except OSError:
+                    app.logger.exception(
+                        "Product deleted, but image could not be removed: %s",
+                        image_path
+                    )
+
+        flash("Product deleted successfully!", "success")
+
+    except Exception:
+
+        if conn:
+            conn.rollback()
+
+        app.logger.exception(
+            "Product deletion failed for product ID: %s",
+            item_id
+        )
+
+        flash(
+            "Unable to delete product. Please try again.",
+            "danger"
+        )
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if conn:
+            conn.close()
+
+    return redirect(url_for('item_list'))
 
 # =================================================================
 # ROUTE 14: SHOW ADMIN PROFILE DATA
@@ -516,7 +581,75 @@ def admin_profile():
 
     return render_template("admin/admin_profile.html", admin=admin)
 
+# =========================================================
+# ROUTE 14: ACTIVATE / DEACTIVATE PRODUCT
+# =========================================================
 
+@app.route('/admin/toggle-product/<int:item_id>', methods=['POST'])
+def toggle_product_status(item_id):
+
+    if 'admin_id' not in session:
+        flash("Please login first!", "danger")
+        return redirect(url_for('admin_login'))
+
+    conn = None
+    cursor = None
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+            SELECT product_id, name, is_active
+            FROM products
+            WHERE product_id = %s
+            """,
+            (item_id,)
+        )
+
+        product = cursor.fetchone()
+
+        if not product:
+            flash("Product not found!", "danger")
+            return redirect(url_for('item_list'))
+
+        new_status = 0 if product['is_active'] else 1
+
+        cursor.execute(
+            """
+            UPDATE products
+            SET is_active = %s
+            WHERE product_id = %s
+            """,
+            (new_status, item_id)
+        )
+
+        conn.commit()
+
+        if new_status == 1:
+            flash("Product activated successfully!", "success")
+        else:
+            flash("Product deactivated successfully!", "success")
+
+    except Exception:
+        if conn:
+            conn.rollback()
+
+        app.logger.exception(
+            "Product status update failed for ID: %s",
+            item_id
+        )
+
+        flash("Unable to update product status.", "danger")
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+    return redirect(url_for('item_list'))
 # =================================================================
 # ROUTE 15: UPDATE ADMIN PROFILE (NAME, EMAIL, PASSWORD, IMAGE)
 # =================================================================
@@ -588,8 +721,9 @@ def admin_profile_update():
     flash("Profile updated successfully!", "success")
     return redirect('/admin/profile')
 
+
 # =========================================================
-# ROUTE 16: FORGOT PASSWORD
+# ADMIN FORGOT PASSWORD
 # =========================================================
 
 @app.route('/admin/forgot-password', methods=['GET', 'POST'])
@@ -597,42 +731,45 @@ def forgot_password():
 
     if request.method == 'POST':
 
-        email = request.form['email']
+        email = request.form.get('email', '').strip().lower()
 
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        if not email:
+            flash('Please enter your email address.', 'danger')
+            return redirect(url_for('forgot_password'))
 
-        cursor.execute(
-            "SELECT * FROM admin WHERE email = %s",
-            (email,)
-        )
+        conn = None
+        cursor = None
 
-        admin = cursor.fetchone()
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
 
-        cursor.close()
-        conn.close()
-
-        if admin:
-
-            token = serializer.dumps(
-                email,
-                salt='password-reset'
+            cursor.execute(
+                "SELECT * FROM admin WHERE email = %s",
+                (email,)
             )
 
-            reset_url = url_for(
-                'reset_password',
-                token=token,
-                _external=True
-            )
+            admin = cursor.fetchone()
 
-            msg = Message(
-                subject="SmartCart - Password Reset",
-                sender=config.MAIL_USERNAME,
-                recipients=[email]
-            )
+            if admin:
+                token = serializer.dumps(
+                    email,
+                    salt='password-reset'
+                )
 
-            msg.body = f"""
-Hello {admin['name']},
+                reset_url = url_for(
+                    'reset_password',
+                    token=token,
+                    _external=True
+                )
+
+                msg = Message(
+                    subject="SmartCart - Password Reset",
+                    sender=config.MAIL_USERNAME,
+                    recipients=[email]
+                )
+
+                msg.body = f"""Hello {admin['name']},
 
 Click the link below to reset your SmartCart password:
 
@@ -641,9 +778,20 @@ Click the link below to reset your SmartCart password:
 This link expires in 15 minutes.
 
 If you did not request this, ignore this email.
-            """
+"""
 
-            mail.send(msg)
+                mail.send(msg)
+
+        except Exception:
+            app.logger.exception(
+                "Admin password reset email failed"
+            )
+
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
 
         flash(
             'If your email is registered, a reset link has been sent.',
@@ -652,11 +800,11 @@ If you did not request this, ignore this email.
 
         return redirect(url_for('forgot_password'))
 
-    return render_template('admin/forgot_password.html')
+    return render_template('admin/forget_password.html')
 
 
 # =========================================================
-# ROUTE 17: RESET PASSWORD
+# ADMIN RESET PASSWORD
 # =========================================================
 
 @app.route('/admin/reset-password/<token>', methods=['GET', 'POST'])
@@ -670,46 +818,91 @@ def reset_password(token):
         )
 
     except Exception:
-        flash('Invalid or expired reset link!', 'danger')
+        flash(
+            'Invalid or expired reset link!',
+            'danger'
+        )
         return redirect(url_for('forgot_password'))
 
     if request.method == 'POST':
 
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if not password or not confirm_password:
+            flash('Please fill in both password fields.', 'danger')
+            return redirect(
+                url_for('reset_password', token=token)
+            )
 
         if password != confirm_password:
             flash('Passwords do not match!', 'danger')
-            return redirect(url_for('reset_password', token=token))
+            return redirect(
+                url_for('reset_password', token=token)
+            )
 
         if len(password) < 8:
-            flash('Password must contain at least 8 characters.', 'danger')
-            return redirect(url_for('reset_password', token=token))
+            flash(
+                'Password must contain at least 8 characters.',
+                'danger'
+            )
+            return redirect(
+                url_for('reset_password', token=token)
+            )
 
-        # Hash password using bcrypt
         hashed_password = bcrypt.hashpw(
             password.encode('utf-8'),
             bcrypt.gensalt()
         ).decode('utf-8')
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        conn = None
+        cursor = None
 
-        cursor.execute(
-            "UPDATE admin SET password = %s WHERE email = %s",
-            (hashed_password, email)
-        )
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
 
-        conn.commit()
+            cursor.execute(
+                "UPDATE admin SET password = %s WHERE email = %s",
+                (hashed_password, email)
+            )
 
-        cursor.close()
-        conn.close()
+            if cursor.rowcount == 0:
+                flash('Admin account not found.', 'danger')
+                return redirect(url_for('admin_login'))
 
-        flash('Password reset successfully!', 'success')
+            conn.commit()
 
-        return redirect(url_for('admin_login'))
+            flash(
+                'Password reset successfully! Please log in.',
+                'success'
+            )
 
-    return render_template('admin/reset_password.html', token=token)
+            return redirect(url_for('admin_login'))
+
+        except Exception:
+            if conn:
+                conn.rollback()
+
+            app.logger.exception(
+                "Admin password update failed"
+            )
+
+            flash(
+                'Unable to reset password. Please try again.',
+                'danger'
+            )
+
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+    return render_template(
+        'admin/reset_password.html',
+        token=token
+    )
 
 # =========================================================
 # USER FORGOT PASSWORD
@@ -922,48 +1115,157 @@ def user_logout():
     return redirect('/user-login')
 
 # ROUTE: USER PRODUCT LISTING (SEARCH + FILTER)
+
 # =================================================================
+# USER PRODUCTS - DISPLAY ACTIVE PRODUCTS ONLY
+# =================================================================
+
 @app.route('/user/products')
 def user_products():
 
-    # Optional: restrict only logged-in users
+    # Check user login
     if 'user_id' not in session:
         flash("Please login to view products!", "danger")
         return redirect('/user-login')
 
-    search = request.args.get('search', '')
-    category_filter = request.args.get('category', '')
+    search = request.args.get('search', '').strip()
+    category_filter = request.args.get('category', '').strip()
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    conn = None
+    cursor = None
 
-    # Fetch categories for filter dropdown
-    cursor.execute("SELECT DISTINCT category FROM products")
-    categories = cursor.fetchall()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
 
-    # Build dynamic SQL
-    query = "SELECT * FROM products WHERE 1=1"
-    params = []
+        # Fetch categories from active products only
+        cursor.execute("""
+            SELECT DISTINCT category
+            FROM products
+            WHERE is_active = 1
+            ORDER BY category
+        """)
 
-    if search:
-        query += " AND name LIKE %s"
-        params.append("%" + search + "%")
+        categories = cursor.fetchall()
 
-    if category_filter:
-        query += " AND category = %s"
-        params.append(category_filter)
+        # Fetch active products only
+        query = """
+            SELECT *
+            FROM products
+            WHERE is_active = 1
+        """
 
-    cursor.execute(query, params)
-    products = cursor.fetchall()
+        params = []
 
-    cursor.close()
-    conn.close()
+        # Product search
+        if search:
+            query += " AND name LIKE %s"
+            params.append("%" + search + "%")
 
-    return render_template(
-        "user/user_products.html",
-        products=products,
-        categories=categories
-    )
+        # Category filtering
+        if category_filter:
+            query += " AND category = %s"
+            params.append(category_filter)
+
+        query += " ORDER BY product_id DESC"
+
+        cursor.execute(query, params)
+        products = cursor.fetchall()
+
+        return render_template(
+            "user/user_products.html",
+            products=products,
+            categories=categories
+        )
+
+    except Exception:
+        app.logger.exception("Error loading customer products")
+        flash("Unable to load products. Please try again.", "danger")
+
+        return redirect('/user/dashboard')
+
+    finally:
+        if cursor:
+            cursor.close()
+
+        if conn:
+            conn.close()
+
+# =================================================================
+# USER PRODUCTS - DISPLAY ACTIVE PRODUCTS ONLY
+# =================================================================
+
+@app.route('/user/products')
+def user_products():
+
+    # Check user login
+    if 'user_id' not in session:
+        flash("Please login to view products!", "danger")
+        return redirect('/user-login')
+
+    search = request.args.get('search', '').strip()
+    category_filter = request.args.get('category', '').strip()
+
+    conn = None
+    cursor = None
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Fetch categories from active products only
+        cursor.execute("""
+            SELECT DISTINCT category
+            FROM products
+            WHERE is_active = 1
+            ORDER BY category
+        """)
+
+        categories = cursor.fetchall()
+
+        # Fetch active products only
+        query = """
+            SELECT *
+            FROM products
+            WHERE is_active = 1
+        """
+
+        params = []
+
+        # Product search
+        if search:
+            query += " AND name LIKE %s"
+            params.append("%" + search + "%")
+
+        # Category filtering
+        if category_filter:
+            query += " AND category = %s"
+            params.append(category_filter)
+
+        query += " ORDER BY product_id DESC"
+
+        cursor.execute(query, params)
+        products = cursor.fetchall()
+
+        return render_template(
+            "user/user_products.html",
+            products=products,
+            categories=categories
+        )
+
+    except Exception:
+        app.logger.exception("Error loading customer products")
+        flash("Unable to load products. Please try again.", "danger")
+
+        return redirect('/user/dashboard')
+
+    finally:
+        if cursor:
+            cursor.close()
+
+        if conn:
+            conn.close()
+
 # =================================================================
 # ROUTE: USER PRODUCT DETAILS PAGE
 # =================================================================

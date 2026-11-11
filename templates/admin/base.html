@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,11 +20,274 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
           rel="stylesheet">
 
-    <!-- Common CSS -->
+    <!-- Admin CSS -->
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/admin.css') }}">
-    <link rel="stylesheet"
-      href="{{ url_for('static', filename='css/user.css') }}">
+href="{{ url_for('static', filename='css/admin.css') }}">
+
+    <!-- Base Layout CSS -->
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6fb;
+            color: #29215e;
+            min-height: 100vh;
+        }
+
+        /* =================================
+           ADMIN MAIN LAYOUT
+        ================================= */
+
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* =================================
+           SIDEBAR
+        ================================= */
+
+        .sidebar {
+            width: 292px;
+            min-width: 292px;
+            min-height: 100vh;
+            background: linear-gradient(
+                180deg,
+                #25205b,
+                #5142bd
+            );
+            padding: 30px 20px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .sidebar-brand i {
+            font-size: 32px;
+        }
+
+        .sidebar-brand h2 {
+            font-size: 30px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+
+        .sidebar-brand h2 span {
+            color: white;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            list-style: none;
+            margin: 10px 0;
+        }
+
+        .sidebar-menu li::marker {
+            content: "";
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #eeeaff;
+            text-decoration: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .sidebar-menu a i {
+            font-size: 19px;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: #7965ec;
+            color: white;
+            transform: translateX(4px);
+        }
+
+        /* =================================
+           MAIN CONTENT
+        ================================= */
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            min-height: 100vh;
+            padding: 25px 30px;
+            display: flex;
+            flex-direction: column;
+            background: #f4f6fb;
+        }
+
+        /* =================================
+           TOPBAR
+        ================================= */
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            padding: 18px 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+        }
+
+        .topbar h4 {
+            font-size: 21px;
+            font-weight: 700;
+            color: #302477;
+            margin: 0;
+        }
+
+        .topbar-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #eeecff;
+            color: #5142bd;
+            padding: 10px 17px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* =================================
+           FLASH MESSAGES
+        ================================= */
+
+        .admin-alerts {
+            margin-bottom: 15px;
+        }
+
+        .admin-alerts .alert {
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        /* =================================
+           FOOTER
+        ================================= */
+
+        .admin-footer {
+            margin-top: auto;
+            padding: 25px 10px 10px;
+            text-align: center;
+            color: #85899a;
+            font-size: 13px;
+        }
+
+        /* =================================
+           AUTHENTICATION
+        ================================= */
+
+        .auth-layout {
+            min-height: 100vh;
+        }
+
+        /* =================================
+           RESPONSIVE DESIGN
+        ================================= */
+
+        @media (max-width: 768px) {
+
+            .admin-wrapper {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-width: 100%;
+                min-height: auto;
+                padding: 20px;
+            }
+
+            .sidebar-brand {
+                margin-bottom: 15px;
+            }
+
+            .sidebar-brand h2 {
+                font-size: 25px;
+            }
+
+            .sidebar-menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+
+            .sidebar-menu li {
+                margin: 3px;
+            }
+
+            .sidebar-menu a {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+
+            .sidebar-menu a:hover,
+            .sidebar-menu a.active {
+                transform: none;
+            }
+
+            .main-content {
+                padding: 15px;
+                min-height: auto;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+            }
+
+        }
+
+        @media (max-width: 480px) {
+
+            .sidebar-menu a {
+                padding: 9px;
+            }
+
+            .main-content {
+                padding: 10px;
+            }
+
+            .topbar h4 {
+                font-size: 18px;
+            }
+
+        }
+
+    </style>
 
     {% block extra_css %}{% endblock %}
 
@@ -31,58 +295,81 @@
 
 <body>
 
-    {% if session.get('admin_id') %}
+{% if session.get('admin_id') and request.endpoint not in ['forgot_password', 'reset_password'] %}
 
-    <!-- ADMIN LAYOUT -->
+    <!-- =================================
+         ADMIN LAYOUT
+    ================================= -->
 
     <div class="admin-wrapper">
 
         <!-- Sidebar -->
+
         <aside class="sidebar">
 
             <div class="sidebar-brand">
-                <i class="bi bi-bag-heart-fill fs-3"></i>
+
+                <i class="bi bi-bag-heart-fill"></i>
+
                 <h2>Smart<span>Cart</span></h2>
+
             </div>
+
+
+            <!-- Sidebar Menu -->
 
             <ul class="sidebar-menu">
 
                 <li>
                     <a href="{{ url_for('admin_dashboard') }}"
                        class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+
                         <i class="bi bi-grid"></i>
                         Dashboard
+
                     </a>
                 </li>
+
 
                 <li>
                     <a href="{{ url_for('add_item_page') }}"
                        class="{% if request.endpoint in ['add_item_page', 'add_item'] %}active{% endif %}">
+
                         <i class="bi bi-plus-circle"></i>
                         Add Product
+
                     </a>
                 </li>
+
 
                 <li>
                     <a href="{{ url_for('item_list') }}"
                        class="{% if request.endpoint == 'item_list' %}active{% endif %}">
+
                         <i class="bi bi-box-seam"></i>
                         Product List
+
                     </a>
                 </li>
+
 
                 <li>
                     <a href="{{ url_for('admin_profile') }}"
                        class="{% if request.endpoint in ['admin_profile', 'admin_profile_update'] %}active{% endif %}">
+
                         <i class="bi bi-person-circle"></i>
                         My Profile
+
                     </a>
                 </li>
 
+
                 <li>
                     <a href="{{ url_for('admin_logout') }}">
+
                         <i class="bi bi-box-arrow-right"></i>
                         Logout
+
                     </a>
                 </li>
 
@@ -91,12 +378,22 @@
         </aside>
 
 
-        <!-- Main Content -->
+        <!-- =================================
+             MAIN CONTENT
+        ================================= -->
+
         <main class="main-content">
+
+            <!-- Topbar -->
 
             <div class="topbar">
 
-                <h4>{% block page_heading %}Admin Panel{% endblock %}</h4>
+                <h4>
+                    {% block page_heading %}
+                        Admin Panel
+                    {% endblock %}
+                </h4>
+
 
                 <div class="topbar-profile">
 
@@ -112,65 +409,94 @@
 
 
             <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show">
-                        {{ message }}
 
-                        <button type="button"
-                                class="btn-close"
-                                data-bs-dismiss="alert">
-                        </button>
-                    </div>
-                {% endfor %}
-            {% endwith %}
+            <div class="admin-alerts">
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+
+                    {% for category, message in messages %}
+
+                        <div class="alert alert-{{ category }} alert-dismissible fade show"
+                             role="alert">
+
+                            {{ message }}
+
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert">
+                            </button>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% endwith %}
+
+            </div>
 
 
-            <!-- Page Content -->
+            <!-- Individual Page Content -->
+
             {% block content %}{% endblock %}
 
 
             <!-- Footer -->
+
             <footer class="admin-footer">
+
                 © 2026 SmartCart. All Rights Reserved.
+
             </footer>
 
         </main>
 
     </div>
 
-    {% else %}
 
-    <!-- AUTHENTICATION LAYOUT -->
+{% else %}
 
-    <!-- Flash Messages -->
-    <div class="container mt-3">
+    <!-- =================================
+         AUTHENTICATION LAYOUT
+    ================================= -->
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show">
-                    {{ message }}
+    <div class="auth-layout">
 
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="alert">
-                    </button>
-                </div>
-            {% endfor %}
-        {% endwith %}
+        <div class="container mt-3">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+
+                {% for category, message in messages %}
+
+                    <div class="alert alert-{{ category }} alert-dismissible fade show">
+
+                        {{ message }}
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert">
+                        </button>
+
+                    </div>
+
+                {% endfor %}
+
+            {% endwith %}
+
+        </div>
+
+
+        {% block auth_content %}{% endblock %}
 
     </div>
 
-    {% block auth_content %}{% endblock %}
-
-    {% endif %}
+{% endif %}
 
 
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-    </script>
+<!-- Bootstrap JavaScript -->
 
-    {% block extra_js %}{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+{% block extra_js %}{% endblock %}
 
 </body>
 </html>

@@ -1,283 +1,406 @@
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products List | SmartCart</title>
+{% extends "admin/base.html" %}
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
+{% block title %}Product Management | SmartCart{% endblock %}
 
-        body {
-            background: #f4f5fb;
-            padding: 35px;
-            color: #333;
-        }
+{% block page_heading %}Product Management{% endblock %}
 
-        .container {
-            max-width: 1200px;
-            margin: auto;
-        }
+{% block extra_css %}
+<style>
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
+/* =====================================
+   PRODUCT MANAGEMENT PAGE
+===================================== */
 
-        h2 {
-            color: #312e81;
-            font-size: 28px;
-        }
+.product-container {
+    width: 100%;
+    padding: 25px;
+    color: #29215e;
+}
 
-        .subtitle {
-            color: #777;
-            margin-top: 6px;
-            font-size: 14px;
-        }
+/* Header */
 
-        .add-btn {
-            background: #4f46e5;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: 0.3s;
-        }
+.product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+}
 
-        .add-btn:hover {
-            background: #3730a3;
-        }
+.product-header h2 {
+    color: #302477;
+    font-size: 27px;
+    font-weight: 700;
+    margin-bottom: 7px;
+}
 
-        .filter-section {
-            background: white;
-            padding: 22px;
-            border-radius: 12px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
+.product-header p {
+    color: #85899a;
+    font-size: 14px;
+    margin: 0;
+}
 
-        .filter-section form {
-            display: flex;
-            gap: 10px;
-            flex: 1;
-            min-width: 250px;
-        }
+/* Add Product Button */
 
-        input, select {
-            padding: 11px 14px;
-            border: 1px solid #ddd;
-            border-radius: 7px;
-            outline: none;
-            font-size: 14px;
-            flex: 1;
-            min-width: 0;
-        }
+.add-product-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #5142bd, #2878d0);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.3s;
+}
 
-        input:focus, select:focus {
-            border-color: #6366f1;
-        }
+.add-product-btn:hover {
+    background: #302477;
+    color: white;
+    transform: translateY(-2px);
+}
 
-        button {
-            border: none;
-            padding: 11px 18px;
-            background: #6366f1;
-            color: white;
-            border-radius: 7px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
-        }
+/* Search and Filter */
 
-        button:hover {
-            background: #4338ca;
-        }
+.filter-section {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.04);
+}
 
-        .table-container {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.05);
-            overflow-x: auto;
-        }
+.filter-section input,
+.filter-section select {
+    padding: 11px 14px;
+    border: 1px solid #dcddec;
+    border-radius: 7px;
+    font-size: 14px;
+    outline: none;
+    min-width: 180px;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 700px;
-        }
+.filter-section input {
+    flex: 1;
+}
 
-        th {
-            background: #eef2ff;
-            color: #312e81;
-            padding: 15px;
-            text-align: center;
-            font-size: 14px;
-        }
+.filter-section input:focus,
+.filter-section select:focus {
+    border-color: #6654d9;
+    box-shadow: 0 0 5px rgba(102,84,217,0.15);
+}
 
-        td {
-            padding: 14px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-        }
+/* Search Button */
 
-        tr:hover td {
-            background: #fafaff;
-        }
+.search-btn {
+    background: #5142bd;
+    color: white;
+    border: none;
+    padding: 11px 20px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: 600;
+}
 
-        .product-img {
-            width: 65px;
-            height: 65px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid #eee;
-        }
+.search-btn:hover {
+    background: #302477;
+}
 
-        .view-btn {
-            background: #e0e7ff;
-            color: #3730a3;
-            padding: 7px 14px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-        }
+/* Reset Button */
 
-        .view-btn:hover {
-            background: #c7d2fe;
-        }
+.reset-btn {
+    display: inline-block;
+    background: #eeeaff;
+    color: #5142bd;
+    padding: 11px 18px;
+    border-radius: 7px;
+    text-decoration: none;
+    font-weight: 600;
+}
 
-        .delete-btn {
-            background: #fee2e2;
-            color: #dc2626;
-            padding: 7px 14px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-        }
+.reset-btn:hover {
+    background: #5142bd;
+    color: white;
+}
 
-        .delete-btn:hover {
-            background: #fecaca;
-        }
+/* Product Table Container */
 
-        .flash-message {
-            background: #dcfce7;
-            color: #166534;
-            padding: 12px 15px;
-            border-radius: 7px;
-            margin-bottom: 15px;
-        }
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
 
-        .empty-message {
-            text-align: center;
-            padding: 30px;
-            color: #888;
-        }
+/* Product Table */
 
-        .back-link {
-            display: inline-block;
-            margin-top: 25px;
-            text-decoration: none;
-            color: #4f46e5;
-            font-weight: 600;
-        }
+.product-table {
+    width: 100%;
+    min-width: 750px;
+    border-collapse: collapse;
+}
 
-        .back-link:hover {
-            text-decoration: underline;
-        }
+.product-table thead {
+    background: #eeeaff;
+}
 
-        @media (max-width: 600px) {
-            body {
-                padding: 18px 10px;
-            }
+.product-table th {
+    color: #302477;
+    padding: 16px 13px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    border-bottom: 2px solid #ded9ff;
+    white-space: nowrap;
+}
 
-            h2 {
-                font-size: 23px;
-            }
+.product-table td {
+    padding: 13px;
+    text-align: center;
+    font-size: 14px;
+    border-bottom: 1px solid #eeeeF5;
+    vertical-align: middle;
+}
 
-            .filter-section {
-                padding: 15px;
-            }
+.product-table tbody tr:hover {
+    background: #f8f7ff;
+}
 
-            .filter-section form {
-                width: 100%;
-            }
-        }
-    </style>
-</head>
+/* Product Image */
 
-<body>
+.product-image {
+    width: 65px;
+    height: 65px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #f8f7ff;
+    padding: 5px;
+}
 
-<div class="container">
+.no-image {
+    color: #999;
+    font-size: 12px;
+}
 
-    <!-- Header -->
-    <div class="header">
+/* Product Name */
+
+.product-name {
+    color: #302477;
+    font-weight: 600;
+}
+
+/* Category Badge */
+
+.category-badge {
+    display: inline-block;
+    background: #eeecff;
+    color: #5543bd;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Price */
+
+.product-price {
+    color: #18834b;
+    font-weight: 700;
+}
+
+/* Action Buttons */
+
+.view-btn,
+.delete-btn {
+    display: inline-block;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.view-btn {
+    background: #e8f1ff;
+    color: #2864c5;
+}
+
+.view-btn:hover {
+    background: #2864c5;
+    color: white;
+}
+
+.delete-btn {
+    background: #ffe9e9;
+    color: #d63333;
+}
+
+.delete-btn:hover {
+    background: #d63333;
+    color: white;
+}
+
+/* Delete Form */
+
+.delete-form {
+    margin: 0;
+}
+
+/* Empty Message */
+
+.empty-message {
+    text-align: center;
+    padding: 40px !important;
+    color: #888;
+    font-size: 15px;
+}
+
+/* Responsive Design */
+
+@media (max-width: 768px) {
+
+    .product-container {
+        padding: 15px;
+    }
+
+    .product-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-section input,
+    .filter-section select {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .search-btn,
+    .reset-btn {
+        text-align: center;
+    }
+
+}
+
+@media (max-width: 480px) {
+
+    .product-header h2 {
+        font-size: 22px;
+    }
+
+    .add-product-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .table-wrapper {
+        padding: 8px;
+    }
+
+}
+
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="product-container">
+
+    <!-- Page Header -->
+
+    <div class="product-header">
+
         <div>
-            <h2>📦 Product Management</h2>
-            <p class="subtitle">Manage all products in your SmartCart store.</p>
+            <h2>Product Management</h2>
+            <p>Manage all products in your SmartCart store.</p>
         </div>
 
-        <a href="/admin/add-item" class="add-btn">
-            + Add New Product
+        <a href="{{ url_for('add_item_page') }}"
+           class="add-product-btn">
+
+            <i class="bi bi-plus-circle"></i>
+            Add New Product
+
         </a>
-    </div>
-
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <div class="flash-message">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endwith %}
-
-    <!-- Search and Filter -->
-    <div class="filter-section">
-
-        <form method="GET" action="/admin/item-list">
-            <input type="text"
-                   name="search"
-                   placeholder="Search product..."
-                   value="{{ request.args.get('search', '') }}">
-
-            <button type="submit">Search</button>
-        </form>
-
-        <form method="GET" action="/admin/item-list">
-            <select name="category">
-                <option value="">All Categories</option>
-
-                {% for cat in categories %}
-                    <option value="{{ cat.category }}"
-                        {% if request.args.get('category') == cat.category %}selected{% endif %}>
-                        {{ cat.category }}
-                    </option>
-                {% endfor %}
-            </select>
-
-            <button type="submit">Filter</button>
-        </form>
 
     </div>
 
-    <!-- Products Table -->
-    <div class="table-container">
 
-        <table>
+    <!-- Search and Category Filter -->
+
+    <form method="GET"
+          action="{{ url_for('item_list') }}"
+          class="filter-section">
+
+        <input
+            type="text"
+            name="search"
+            placeholder="Search products..."
+            value="{{ request.args.get('search', '') }}"
+        >
+
+        <select name="category">
+
+            <option value="">All Categories</option>
+
+            {% for cat in categories %}
+
+                <option
+                    value="{{ cat.category }}"
+                    {% if request.args.get('category') == cat.category %}
+                        selected
+                    {% endif %}
+                >
+
+                    {{ cat.category }}
+
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+        <button type="submit" class="search-btn">
+
+            <i class="bi bi-search"></i>
+            Search
+
+        </button>
+
+        <a href="{{ url_for('item_list') }}"
+           class="reset-btn">
+
+            <i class="bi bi-arrow-counterclockwise"></i>
+            Reset
+
+        </a>
+
+    </form>
+
+
+    <!-- Product Table -->
+
+    <div class="table-wrapper">
+
+        <table class="product-table">
+
             <thead>
+
                 <tr>
                     <th>ID</th>
                     <th>Image</th>
@@ -287,60 +410,142 @@
                     <th>View</th>
                     <th>Delete</th>
                 </tr>
+
             </thead>
+
 
             <tbody>
 
                 {% for product in products %}
+
                 <tr>
 
-                    <td>{{ product.product_id }}</td>
+                    <!-- Product ID -->
 
                     <td>
-                        <img
-                            src="{{ url_for('static', filename='uploads/product_images/' ~ product.image) }}"
-                            class="product-img"
-                            alt="{{ product.name }}">
+                        {{ product.product_id }}
                     </td>
 
-                    <td><strong>{{ product.name }}</strong></td>
 
-                    <td>{{ product.category }}</td>
-
-                    <td>₹{{ product.price }}</td>
+                    <!-- Product Image -->
 
                     <td>
-                        <a href="/admin/view-item/{{ product.product_id }}"
-                           class="view-btn">View</a>
+
+                        {% if product.image %}
+
+                            <img
+                                src="{{ url_for('static', filename='uploads/product_images/' ~ product.image) }}"
+                                alt="{{ product.name }}"
+                                class="product-image"
+                            >
+
+                        {% else %}
+
+                            <span class="no-image">
+                                No Image
+                            </span>
+
+                        {% endif %}
+
                     </td>
 
+
+                    <!-- Product Name -->
+
+                    <td class="product-name">
+                        {{ product.name }}
+                    </td>
+
+
+                    <!-- Category -->
+
                     <td>
-                        <a href="/admin/delete-item/{{ product.product_id }}"
-                           class="delete-btn"
-                           onclick="return confirm('Are you sure you want to delete this product?')">
-                           Delete
+
+                        <span class="category-badge">
+                            {{ product.category }}
+                        </span>
+
+                    </td>
+
+
+                    <!-- Price -->
+
+                    <td class="product-price">
+                        ₹{{ "%.2f"|format(product.price|float) }}
+                    </td>
+
+
+                    <!-- View Button -->
+
+                    <td>
+
+                        <a
+                            href="{{ url_for('view_item', item_id=product.product_id) }}"
+                            class="view-btn"
+                        >
+
+                            <i class="bi bi-eye"></i>
+                            View
+
                         </a>
+
+                    </td>
+
+
+                    <!-- Delete Button -->
+
+                    <td>
+
+                        <form
+                            method="POST"
+                            action="{{ url_for('delete_item', item_id=product.product_id) }}"
+                            class="delete-form"
+                            onsubmit="return confirm('Are you sure you want to delete this product?');"
+                        >
+
+                            <button
+                                type="submit"
+                                class="delete-btn"
+                            >
+
+                                <i class="bi bi-trash"></i>
+                                Delete
+
+                            </button>
+
+                        </form>
+
                     </td>
 
                 </tr>
+
+
                 {% else %}
+
+                <!-- No Products Found -->
+
                 <tr>
+
                     <td colspan="7" class="empty-message">
-                        No products found.
+
+                        <i class="bi bi-box-seam fs-2"></i>
+
+                        <p class="mt-2 mb-0">
+                            No products found.
+                        </p>
+
                     </td>
+
                 </tr>
+
                 {% endfor %}
 
             </tbody>
+
         </table>
 
     </div>
 
-    <a href="/admin-dashboard" class="back-link">
-        ← Back to Dashboard
-    </a>
-
 </div>
 
-</body>
-</html>
+{% endblock %}
