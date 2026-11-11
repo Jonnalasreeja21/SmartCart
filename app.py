@@ -526,7 +526,7 @@ def delete_item(item_id):
                     os.remove(image_path)
                 except OSError:
                     app.logger.exception(
-                        "Product deleted, but image could not be removed: ?",
+                        "Product deleted, but image could not be removed: %s",
                         image_path
                     )
 
@@ -538,7 +538,7 @@ def delete_item(item_id):
             conn.rollback()
 
         app.logger.exception(
-            "Product deletion failed for product ID: ?",
+            "Product deletion failed for product ID: %s",
             item_id
         )
 
@@ -636,7 +636,7 @@ def toggle_product_status(item_id):
             conn.rollback()
 
         app.logger.exception(
-            "Product status update failed for ID: ?",
+            "Product status update failed for ID: %s",
             item_id
         )
 
