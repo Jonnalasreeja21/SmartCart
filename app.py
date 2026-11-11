@@ -226,6 +226,13 @@ def admin_logout():
 UPLOAD_FOLDER = 'static/uploads/product_images'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Admin profile image uploads
+app.config['ADMIN_UPLOAD_FOLDER'] = os.path.join(
+    app.root_path, 'static', 'uploads', 'admin_profiles'
+)
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(app.config['ADMIN_UPLOAD_FOLDER'], exist_ok=True)
+
 # ROUTE 7: SHOW ADD PRODUCT PAGE (Protected Route)
 # =================================================================
 @app.route('/admin/add-item', methods=['GET'])
@@ -1182,82 +1189,7 @@ def user_products():
         app.logger.exception("Error loading customer products")
         flash("Unable to load products. Please try again.", "danger")
 
-        return redirect('/user/dashboard')
-
-    finally:
-        if cursor:
-            cursor.close()
-
-        if conn:
-            conn.close()
-
-# =================================================================
-# USER PRODUCTS - DISPLAY ACTIVE PRODUCTS ONLY
-# =================================================================
-
-@app.route('/user/products')
-def user_products():
-
-    # Check user login
-    if 'user_id' not in session:
-        flash("Please login to view products!", "danger")
-        return redirect('/user-login')
-
-    search = request.args.get('search', '').strip()
-    category_filter = request.args.get('category', '').strip()
-
-    conn = None
-    cursor = None
-
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-
-        # Fetch categories from active products only
-        cursor.execute("""
-            SELECT DISTINCT category
-            FROM products
-            WHERE is_active = 1
-            ORDER BY category
-        """)
-
-        categories = cursor.fetchall()
-
-        # Fetch active products only
-        query = """
-            SELECT *
-            FROM products
-            WHERE is_active = 1
-        """
-
-        params = []
-
-        # Product search
-        if search:
-            query += " AND name LIKE %s"
-            params.append("%" + search + "%")
-
-        # Category filtering
-        if category_filter:
-            query += " AND category = %s"
-            params.append(category_filter)
-
-        query += " ORDER BY product_id DESC"
-
-        cursor.execute(query, params)
-        products = cursor.fetchall()
-
-        return render_template(
-            "user/user_products.html",
-            products=products,
-            categories=categories
-        )
-
-    except Exception:
-        app.logger.exception("Error loading customer products")
-        flash("Unable to load products. Please try again.", "danger")
-
-        return redirect('/user/dashboard')
+        return redirect('/user-dashboard')
 
     finally:
         if cursor:
@@ -1609,11 +1541,11 @@ def order_summary():
 
     if not selected_ids:
         flash("Please select products first.", "warning")
-        return redirect(url_for('user_cart'))
+        return redirect(url_for('view_cart'))
 
     if any(pid not in cart for pid in selected_ids):
         flash("Invalid product selection.", "danger")
-        return redirect(url_for('user_cart'))
+        return redirect(url_for('view_cart'))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -1643,7 +1575,7 @@ def order_summary():
 
         if len(db_products) != len(selected_ids):
             flash("Some products are unavailable.", "danger")
-            return redirect(url_for('user_cart'))
+            return redirect(url_for('view_cart'))
 
         selected_products = {}
         selected_total = 0
