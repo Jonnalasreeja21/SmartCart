@@ -25,6 +25,7 @@ app.config['MAIL_PORT'] = config.MAIL_PORT
 app.config['MAIL_USE_TLS'] = config.MAIL_USE_TLS
 app.config['MAIL_USERNAME'] = config.MAIL_USERNAME
 app.config['MAIL_PASSWORD'] = config.MAIL_PASSWORD
+app.config['MAIL_DEFAULT_SENDER'] = config.MAIL_DEFAULT_SENDER
 
 mail = Mail(app)
 
@@ -78,9 +79,16 @@ def admin_signup():
     session['otp'] = otp
 
     # 4️⃣ Send OTP Email
+    if not (config.MAIL_USERNAME and config.MAIL_PASSWORD and config.MAIL_DEFAULT_SENDER):
+        session.pop("otp", None)
+        session.pop("signup_name", None)
+        session.pop("signup_email", None)
+        flash("Email service is not configured. Please contact the site administrator.", "danger")
+        return redirect("/admin-signup")
+
     message = Message(
         subject="SmartCart Admin OTP",
-        sender=config.MAIL_USERNAME,
+        sender=app.config["MAIL_DEFAULT_SENDER"],
         recipients=[email]
     )
     message.body = f"Your OTP for SmartCart Admin Registration is: {otp}"
