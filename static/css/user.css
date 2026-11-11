@@ -342,3 +342,30 @@ table img { width: 65px; height: 65px; object-fit: contain; }
         animation-iteration-count: 1 !important;
     }
 }
+
+
+/* Forgot password link on the user login page */
+.forgot-password-row {
+    display: flex;
+    justify-content: flex-end;
+    margin: -8px 0 20px;
+}
+
+.forgot-password-row a {
+    color: #5142bd;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.forgot-password-row a:hover {
+    color: #30266f;
+    text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+    .forgot-password-row a {
+        font-size: 0.9rem;
+    }
+}
